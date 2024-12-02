@@ -1,8 +1,9 @@
 import runloop
-import motor_pair
+import math
+import motor_pair, motor
 from hub import port, device_uuid, motion_sensor
 
-LARGE_BLUE_WHEEL = 87 # mm
+LARGE_BLUE_WHEEL = 8.7 # mm
 
 async def main():
     ace = AdvancedBase()
@@ -24,13 +25,17 @@ async def main():
     ace.debug()
 
 class AdvancedBase:
-    def __init__(self, leftmotor=port.A, rightmotor=port.B, motorpair=motor_pair.PAIR_1, wheeldiameter_mm=LARGE_BLUE_WHEEL):
+    def __init__(self, leftmotor=port.A, rightmotor=port.B, motorpair=motor_pair.PAIR_1, wheeldiameter_cm=LARGE_BLUE_WHEEL):
         self.mp = motor_pair.pair(motorpair, leftmotor, rightmotor)
-        self.wd = wheeldiameter_mm
+        self.lm = leftmotor
+        self.wd = wheeldiameter_cm
         self.angle_goal = 0
         motion_sensor.reset_yaw(0)
 
     async def drive_forward(self, cm):
+        goal_position = motor.relative_position(self.lm) + self.degrees(cm)
+        # while goal_position < motor.relative_position(self.lm):
+        #     print("todo")
         print("todo: drive forward {} cm".format(cm))
 
     async def drive_backward(self, cm):
@@ -47,5 +52,8 @@ class AdvancedBase:
 
     def get_yaw(self):
         return motion_sensor.tilt_angles()[0] / 10
+
+    def degrees(self, cm):
+        return cm * 360 / (math.pi * self.wd)
 
 runloop.run(main())
